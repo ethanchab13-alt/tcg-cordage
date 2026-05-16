@@ -61,8 +61,9 @@ export async function POST(request: Request) {
     )
   }
 
-  // Insérer la commande
-  const { data: order, error: insertError } = await supabase
+  // Insérer la commande via admin client (bypass RLS)
+  const adminForInsert = await createAdminClient()
+  const { data: order, error: insertError } = await adminForInsert
     .from('stringing_orders')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .insert({
