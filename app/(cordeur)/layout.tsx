@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
+
+const CORDEUR_EMAIL = process.env.NEXT_PUBLIC_CORDEUR_EMAIL ?? 'ethanchab13@gmail.com'
 
 export default async function CordeurLayout({
   children,
@@ -15,20 +17,18 @@ export default async function CordeurLayout({
 
   if (!user) redirect('/login')
 
-  const admin = await createAdminClient()
-  const { data } = await admin
-    .from('profiles')
-    .select('role, full_name')
-    .eq('id', user!.id)
-    .single()
+  // Vérification du rôle via user_metadata (pas de DB query, pas de RLS)
+  const isCordeur =
+    user.user_metadata?.role === 'cordeur' ||
+    user.email === CORDEUR_EMAIL
 
-  const profile = data as { role: string; full_name: string | null } | null
+  if (!isCordeur) redirect('/dashboard')
 
-  if (!profile || profile.role !== 'cordeur') redirect('/dashboard')
+  const fullName = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? null
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar role="cordeur" fullName={profile.full_name} />
+      <Navbar role="cordeur" fullName={fullName} />
       <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
     </div>
   )
