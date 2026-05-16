@@ -28,16 +28,13 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
   }
 
-  // Vérifier que c'est bien le cordeur
-  const { data: profileData } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  // Vérifier que c'est bien le cordeur via user_metadata
+  const CORDEUR_EMAIL = process.env.NEXT_PUBLIC_CORDEUR_EMAIL ?? 'ethanchab13@gmail.com'
+  const isCordeur =
+    user.user_metadata?.role === 'cordeur' ||
+    user.email === CORDEUR_EMAIL
 
-  const profile = profileData as { role: string } | null
-
-  if (!profile || profile.role !== 'cordeur') {
+  if (!isCordeur) {
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
   }
 
