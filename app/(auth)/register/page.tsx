@@ -52,16 +52,6 @@ export default function RegisterPage() {
       return
     }
 
-    // Créer le profil manuellement (filet de sécurité si le trigger DB ne s'est pas déclenché)
-    if (data.user) {
-      await supabase.from('profiles').upsert({
-        id:        data.user.id,
-        email:     email.toLowerCase().trim(),
-        full_name: fullName.trim(),
-        role:      'client',
-      }, { onConflict: 'id' })
-    }
-
     // Si la confirmation email est désactivée → session immédiate → rediriger
     if (data.session) {
       window.location.href = '/dashboard'
