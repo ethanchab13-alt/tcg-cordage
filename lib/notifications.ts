@@ -10,7 +10,7 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import { sendPushNotification, type PushPayload } from '@/lib/push'
 import { sendEmail, emailOrderCreated, emailOrderReady } from '@/lib/email'
-import type { StringingOrder, Profile } from '@/types/database'
+import type { StringingOrder, Profile, Json } from '@/types/database'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://tcg-stringing.vercel.app'
 
@@ -56,7 +56,8 @@ export async function sendOrderNotification(
       if (pushResult.error === 'SUBSCRIPTION_EXPIRED') {
         await supabase
           .from('profiles')
-          .update({ push_subscription: null })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .update({ push_subscription: null } as any)
           .eq('id', recipient.id)
       }
     }
@@ -79,6 +80,7 @@ export async function sendOrderNotification(
   }
 
   // ── 3. Logger la notification ─────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await supabase.from('notification_log').insert({
     order_id:     order.id,
     recipient_id: recipient.id,

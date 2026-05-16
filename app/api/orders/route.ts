@@ -15,11 +15,13 @@ export async function POST(request: Request) {
   }
 
   // Vérifier que c'est bien un client (pas un cordeur)
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
+
+  const profile = profileData as { role: string } | null
 
   if (!profile || profile.role !== 'client') {
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
@@ -65,6 +67,7 @@ export async function POST(request: Request) {
   // Insérer la commande
   const { data: order, error: insertError } = await supabase
     .from('stringing_orders')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .insert({
       client_id:     user.id,
       racket_brand:  typeof racket_brand === 'string' ? racket_brand.trim() || null : null,
@@ -88,23 +91,23 @@ export async function POST(request: Request) {
     const adminSupabase = await createAdminClient()
 
     // Récupérer le(s) compte(s) cordeur
-    const { data: cordeurs } = await adminSupabase
+    const { data: rawCordeurs } = await adminSupabase
       .from('profiles')
       .select('id, email, full_name, push_subscription')
       .eq('role', 'cordeur')
+    const cordeurs = rawCordeurs as Array<{ id: string; email: string; full_name: string | null; push_subscription: import('@/types/database').Json }> | null
 
     if (cordeurs && cordeurs.length > 0) {
       // Récupérer le profil client pour personnaliser la notif
-      const { data: clientProfile } = await adminSupabase
+      const { data: clientProfileData } = await adminSupabase
         .from('profiles')
         .select('full_name, email')
         .eq('id', user.id)
         .single()
 
-      const orderWithClientName = {
-        ...order!,
-        // On surcharge string_type pour afficher le nom du client dans la notif push
-      }
+      const clientProfile = clientProfileData as { full_name: string | null; email: string } | null
+
+      const orderWithClientName = order! as import('@/types/database').StringingOrder
 
       await Promise.allSettled(
         cordeurs.map((cordeur) =>

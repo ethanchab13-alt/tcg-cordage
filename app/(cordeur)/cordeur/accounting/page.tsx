@@ -1,4 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
+import type { StringingOrder } from '@/types/database'
+
+type OrderWithProfile = StringingOrder & {
+  profiles?: { full_name: string | null; email: string } | null
+}
 import AccountingClient from './AccountingClient'
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +18,7 @@ export default async function AccountingPage() {
     .eq('status', 'delivered')
     .order('delivered_at', { ascending: false })
 
-  const deliveredOrders = orders ?? []
+  const deliveredOrders = (orders ?? []) as unknown as OrderWithProfile[]
 
   // ── Calculs KPIs ─────────────────────────────────────────────
   const ordersWithPrice   = deliveredOrders.filter((o) => o.price != null)

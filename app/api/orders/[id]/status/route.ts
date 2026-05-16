@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import type { OrderStatus } from '@/types/database'
+import type { OrderStatus, Json } from '@/types/database'
 import { sendOrderNotification } from '@/lib/notifications'
 
 // Transitions valides : seul le cordeur peut faire avancer le statut
@@ -29,11 +29,13 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   // Vérifier que c'est bien le cordeur
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
+
+  const profile = profileData as { role: string } | null
 
   if (!profile || profile.role !== 'cordeur') {
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
@@ -54,11 +56,13 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   // Récupérer la commande actuelle
-  const { data: order, error: fetchError } = await supabase
+  const { data: orderData, error: fetchError } = await supabase
     .from('stringing_orders')
     .select('status')
     .eq('id', id)
     .single()
+
+  const order = orderData as { status: string } | null
 
   if (fetchError || !order) {
     return NextResponse.json({ error: 'Commande introuvable' }, { status: 404 })
@@ -100,7 +104,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   const { data: updated, error: updateError } = await adminSupabase
     .from('stringing_orders')
-    .update(updateFields)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update(updateFields as any)
     .eq('id', id)
     .select('*, profiles(full_name, email)')
     .single()
@@ -113,18 +118,25 @@ export async function PATCH(request: Request, context: RouteContext) {
   // ── Notifier le client quand la raquette est prête ───────────
   if (newStatus === 'ready') {
     try {
-      const { data: clientProfile } = await adminSupabase
+      const { data: clientProfileData } = await adminSupabase
         .from('profiles')
         .select('id, email, full_name, push_subscription')
-        .eq('id', updated.client_id)
+        .eq('id', (updated as { client_id: string }).client_id)
         .single()
 
+      const clientProfile = clientProfileData as {
+        id: string
+        email: string
+        full_name: string | null
+        push_subscription: Json
+      } | null
+
       if (clientProfile) {
-        await sendOrderNotification('order_ready', updated, {
+        await sendOrderNotification('order_ready', updated!, {
           id:                clientProfile.id,
           email:             clientProfile.email,
           full_name:         clientProfile.full_name,
-          push_subscription: clientProfile.push_subscription,
+          push_subscription: clientProfile.push_subscription as Json,
         })
       }
     } catch (notifErr) {

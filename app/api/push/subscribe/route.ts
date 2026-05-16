@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-
 export async function POST(request: Request) {
   const supabase = await createClient()
 
@@ -31,7 +30,8 @@ export async function POST(request: Request) {
 
   const { error } = await supabase
     .from('profiles')
-    .update({ push_subscription: subscription })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ push_subscription: subscription as any })
     .eq('id', user.id)
 
   if (error) {
@@ -58,7 +58,8 @@ export async function DELETE() {
 
   await supabase
     .from('profiles')
-    .update({ push_subscription: null })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ push_subscription: null } as any)
     .eq('id', user.id)
 
   return NextResponse.json({ success: true })

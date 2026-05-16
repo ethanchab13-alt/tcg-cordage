@@ -16,11 +16,13 @@ export default async function CordeurLayout({
   if (!user) redirect('/login')
 
   const admin = await createAdminClient()
-  const { data: profile } = await admin
+  const { data } = await admin
     .from('profiles')
     .select('role, full_name')
-    .eq('id', user.id)
+    .eq('id', user!.id)
     .single()
+
+  const profile = data as { role: string; full_name: string | null } | null
 
   if (!profile || profile.role !== 'cordeur') redirect('/dashboard')
 

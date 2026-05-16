@@ -39,7 +39,7 @@ export default async function OrdersHistoryPage({ searchParams }: Props) {
 
   const { data: orders } = await query
 
-  const activeFilter = (rawStatus as OrderStatus) ?? 'all'
+  const activeFilter: OrderStatus | 'all' = (validStatuses.includes(rawStatus as OrderStatus) ? rawStatus as OrderStatus : 'all')
 
   return (
     <div className="space-y-5">
@@ -63,7 +63,7 @@ export default async function OrdersHistoryPage({ searchParams }: Props) {
           <FilterTab
             key={s}
             href={s === 'all' ? '/orders' : `/orders?status=${s}`}
-            active={activeFilter === s || (s === 'all' && !validStatuses.includes(activeFilter))}
+            active={activeFilter === s || (s === 'all' && !validStatuses.includes(activeFilter as OrderStatus))}
             label={STATUS_LABELS[s]}
           />
         ))}

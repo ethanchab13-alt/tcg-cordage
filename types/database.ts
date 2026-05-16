@@ -7,6 +7,9 @@ export type Json =
   | Json[]
 
 export type Database = {
+  __InternalSupabase: {
+    PostgrestVersion: '12'
+  }
   public: {
     Tables: {
       profiles: {
@@ -36,6 +39,7 @@ export type Database = {
           push_subscription?: Json | null
           updated_at?: string
         }
+        Relationships: []
       }
       stringing_orders: {
         Row: {
@@ -81,6 +85,15 @@ export type Database = {
           ready_at?: string | null
           delivered_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: 'stringing_orders_client_id_fkey'
+            columns: ['client_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
       }
       notification_log: {
         Row: {
@@ -103,9 +116,21 @@ export type Database = {
           error_msg?: string | null
           sent_at?: string
         }
-        Update: never
+        Update: {
+          id?: string
+          order_id?: string | null
+          recipient_id?: string
+          type?: 'push' | 'email'
+          event?: 'order_created' | 'order_ready' | 'order_delivered'
+          status?: 'sent' | 'failed'
+          error_msg?: string | null
+          sent_at?: string
+        }
+        Relationships: []
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
   }
 }
 

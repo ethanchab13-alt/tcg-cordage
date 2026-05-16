@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import type { StringingOrder } from '@/types/database'
 
 export async function GET() {
   const supabase = await createClient()
@@ -13,11 +14,13 @@ export async function GET() {
     return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
   }
 
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
+
+  const profile = profileData as { role: string } | null
 
   if (!profile || profile.role !== 'cordeur') {
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
@@ -34,7 +37,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Erreur lors de la récupération' }, { status: 500 })
   }
 
-  const deliveredOrders = orders ?? []
+  const deliveredOrders = (orders ?? []) as unknown as StringingOrder[]
 
   // ── KPIs globaux ─────────────────────────────────────────────
   const ordersWithPrice  = deliveredOrders.filter((o) => o.price != null)
@@ -98,6 +101,6 @@ export async function GET() {
     },
     monthlyData,
     topStrings,
-    recentOrders: deliveredOrders.slice(0, 50),   // 50 dernières pour le tableau
+    recentOrders: deliveredOrders.slice(0, 50),
   })
 }

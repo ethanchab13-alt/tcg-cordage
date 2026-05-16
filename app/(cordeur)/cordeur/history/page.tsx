@@ -1,5 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import CordeurOrderCard from '@/components/CordeurOrderCard'
+import type { StringingOrder } from '@/types/database'
+
+type OrderWithClient = StringingOrder & {
+  profiles?: { full_name: string | null; email: string } | null
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -17,12 +22,14 @@ export default async function CordeurHistoryPage({ searchParams }: Props) {
 
   const supabase = await createClient()
 
-  const { data: orders, count } = await supabase
+  const { data: rawOrders, count } = await supabase
     .from('stringing_orders')
     .select('*, profiles(full_name, email)', { count: 'exact' })
     .eq('status', 'delivered')
     .order('delivered_at', { ascending: false })
     .range(from, to)
+
+  const orders = (rawOrders ?? []) as OrderWithClient[]
 
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
@@ -37,7 +44,7 @@ export default async function CordeurHistoryPage({ searchParams }: Props) {
       </div>
 
       {/* Grille */}
-      {orders && orders.length > 0 ? (
+      {orders.length > 0 ? (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {orders.map((order) => (
