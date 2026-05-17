@@ -97,7 +97,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   // Utiliser le client admin pour contourner les RLS sur UPDATE (le cordeur a la policy)
-  const adminSupabase = await createAdminClient()
+  const adminSupabase = createAdminClient()
 
   const { data: updated, error: updateError } = await adminSupabase
     .from('stringing_orders')

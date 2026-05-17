@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   }
 
   // Insérer la commande via admin client (bypass RLS)
-  const adminForInsert = await createAdminClient()
+  const adminForInsert = createAdminClient()
   const { data: order, error: insertError } = await adminForInsert
     .from('stringing_orders')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
   // ── Notifier le cordeur (push + fallback email) ──────────────
   // Opération non-bloquante : on ne fait pas échouer la requête si la notif plante
   try {
-    const adminSupabase = await createAdminClient()
+    const adminSupabase = createAdminClient()
 
     // Récupérer le(s) compte(s) cordeur
     const { data: rawCordeurs } = await adminSupabase

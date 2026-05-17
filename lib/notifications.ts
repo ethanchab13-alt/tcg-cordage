@@ -32,7 +32,7 @@ export async function sendOrderNotification(
   order: StringingOrder,
   recipient: RecipientInfo
 ): Promise<void> {
-  const supabase = await createAdminClient()
+  const supabase = createAdminClient()
 
   const pushPayload = buildPushPayload(event, order, recipient)
   let notifType: 'push' | 'email' = 'push'
