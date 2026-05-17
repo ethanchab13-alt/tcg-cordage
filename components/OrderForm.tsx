@@ -49,7 +49,13 @@ export default function OrderForm({ onOrderCreated }: OrderFormProps) {
     const json = await res.json()
 
     if (!res.ok) {
-      setError(json.error ?? 'Une erreur est survenue.')
+      const debugInfo = [
+        json.error,
+        json.debug_message && `[${json.debug_code}] ${json.debug_message}`,
+        json.debug_hint && `Hint: ${json.debug_hint}`,
+        json.debug_details && `Details: ${json.debug_details}`,
+      ].filter(Boolean).join(' — ')
+      setError(debugInfo || 'Une erreur est survenue.')
       setLoading(false)
       return
     }

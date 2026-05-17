@@ -80,7 +80,13 @@ export async function POST(request: Request) {
 
   if (insertError) {
     console.error('[POST /api/orders]', insertError)
-    return NextResponse.json({ error: 'Erreur lors de la création' }, { status: 500 })
+    return NextResponse.json({
+      error: 'Erreur lors de la création',
+      debug_message: insertError.message,
+      debug_code: insertError.code,
+      debug_details: insertError.details,
+      debug_hint: insertError.hint,
+    }, { status: 500 })
   }
 
   // ── Notifier le cordeur (push + fallback email) ──────────────
