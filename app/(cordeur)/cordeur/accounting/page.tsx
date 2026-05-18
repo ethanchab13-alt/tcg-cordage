@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import type { StringingOrder } from '@/types/database'
 
 type OrderWithProfile = StringingOrder & {
@@ -9,7 +9,7 @@ import AccountingClient from './AccountingClient'
 export const dynamic = 'force-dynamic'
 
 export default async function AccountingPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Récupérer les données directement côté serveur (pas besoin de passer par l'API)
   const { data: orders } = await supabase

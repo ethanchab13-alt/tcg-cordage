@@ -1,10 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import CordeurDashboard from './CordeurDashboard'
 
 export const dynamic = 'force-dynamic'
 
 export default async function CordeurDashboardPage() {
-  const supabase = await createClient()
+  // Admin client : bypass RLS pour que le cordeur voit toutes les commandes
+  const supabase = createAdminClient()
 
   // Charger les commandes actives (non livrées) avec infos client
   const { data: orders } = await supabase

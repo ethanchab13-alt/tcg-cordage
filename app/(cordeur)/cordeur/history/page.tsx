@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import CordeurOrderCard from '@/components/CordeurOrderCard'
 import type { StringingOrder } from '@/types/database'
 
@@ -20,7 +20,7 @@ export default async function CordeurHistoryPage({ searchParams }: Props) {
   const from = (page - 1) * PAGE_SIZE
   const to   = from + PAGE_SIZE - 1
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: rawOrders, count } = await supabase
     .from('stringing_orders')
