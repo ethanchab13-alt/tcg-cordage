@@ -22,10 +22,9 @@ export default function PushSubscribeButton() {
 
   // ── Enregistrer le Service Worker au montage ────────────────
   useEffect(() => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
+    if (typeof window === 'undefined') return
 
-    // Vérifier le support Web Push
-    if (!('PushManager' in window)) {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
       setPermission('unsupported')
       return
     }
@@ -45,6 +44,7 @@ export default function PushSubscribeButton() {
       })
       .catch((err) => {
         console.error('[SW] Erreur enregistrement:', err)
+        setPermission('unsupported')
       })
   }, [])
 
@@ -109,20 +109,18 @@ export default function PushSubscribeButton() {
     }
   }
 
-  // Ne rien afficher si non supporté ou déjà refusé définitivement
-  if (permission === 'unsupported') return null
-  if (permission === 'denied') {
+  if (permission === 'unsupported') {
     return (
       <p className="text-xs text-gray-400 text-center py-1">
-        Notifications bloquées par le navigateur.{' '}
-        <a
-          href="https://support.google.com/chrome/answer/3220216"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline"
-        >
-          Comment les autoriser ?
-        </a>
+        Les notifications ne sont pas supportées par ce navigateur.{' '}
+        Sur iPhone, installe d&apos;abord l&apos;app via <strong>Partager → Sur l&apos;écran d&apos;accueil</strong>.
+      </p>
+    )
+  }
+  if (permission === 'denied') {
+    return (
+      <p className="text-xs text-red-400 text-center py-1">
+        Notifications bloquées. Dans Chrome : <strong>Paramètres → Paramètres du site → Notifications</strong> → autorise ce site.
       </p>
     )
   }
