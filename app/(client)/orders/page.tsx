@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import OrderCard from '@/components/OrderCard'
 import type { OrderStatus } from '@/types/database'
@@ -25,8 +25,11 @@ export default async function OrdersHistoryPage({ searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Admin client pour bypasser les RLS sur le SELECT
+  const admin = createAdminClient()
+
   // Construire la requête selon le filtre
-  let query = supabase
+  let query = admin
     .from('stringing_orders')
     .select('*')
     .eq('client_id', user!.id)

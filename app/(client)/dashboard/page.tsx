@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import ClientDashboard from './ClientDashboard'
 
 export const dynamic = 'force-dynamic'
@@ -10,8 +10,11 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Admin client pour bypasser les RLS sur le SELECT
+  const admin = createAdminClient()
+
   // Charger les commandes actives (non livrées) côté serveur pour le premier rendu
-  const { data: orders } = await supabase
+  const { data: orders } = await admin
     .from('stringing_orders')
     .select('*')
     .eq('client_id', user!.id)
