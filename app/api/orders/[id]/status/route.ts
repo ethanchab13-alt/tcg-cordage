@@ -52,8 +52,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Le champ "status" est requis' }, { status: 422 })
   }
 
-  // Récupérer la commande actuelle
-  const { data: orderData, error: fetchError } = await supabase
+  // Récupérer la commande actuelle (admin client pour bypasser RLS)
+  const adminSupabase = createAdminClient()
+  const { data: orderData, error: fetchError } = await adminSupabase
     .from('stringing_orders')
     .select('status')
     .eq('id', id)
@@ -95,9 +96,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
     updateFields.price = priceNum
   }
-
-  // Utiliser le client admin pour contourner les RLS sur UPDATE (le cordeur a la policy)
-  const adminSupabase = createAdminClient()
 
   const { data: updated, error: updateError } = await adminSupabase
     .from('stringing_orders')
